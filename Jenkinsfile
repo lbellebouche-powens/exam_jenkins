@@ -26,8 +26,8 @@ stages {
                     script {
                     sh '''
                     cd ../
-                    sed -i "s/    build: ./movie-service/    image: ${DOCKER_ID}/${MOVIE_DOCKER_IMAGE}:${DOCKER_TAG}/" docker-compose.yml
-                    sed -i "s/    build: ./movie-service/    image: ${DOCKER_ID}/${CAST_DOCKER_IMAGE}:${DOCKER_TAG}/" docker-compose.yml
+                    sed -i "s+    build: ./movie-service/    image: ${DOCKER_ID}/${MOVIE_DOCKER_IMAGE}:${DOCKER_TAG}/" docker-compose.yml
+                    sed -i "s+    build: ./movie-service/    image: ${DOCKER_ID}/${CAST_DOCKER_IMAGE}:${DOCKER_TAG}/" docker-compose.yml
                     docker compose up
                     sleep 10
                     '''
