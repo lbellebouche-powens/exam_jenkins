@@ -27,7 +27,6 @@ stages {
                     sh '''
                     sed -i "s+.*build: ./movie-service+    image: ${DOCKER_ID}/${MOVIE_DOCKER_IMAGE}:${DOCKER_TAG}+g" docker-compose.yml
                     sed -i "s+.*build: ./movie-service+    image: ${DOCKER_ID}/${CAST_DOCKER_IMAGE}:${DOCKER_TAG}+g" docker-compose.yml
-                    cat docker-compose.yml
                     docker compose up
                     sleep 10
                     '''
@@ -41,6 +40,8 @@ stages {
                     sh '''
                     curl http://localhost:9090/api/v1/movies/docs
                     curl http://localhost:9090/api/v1/casts/docs
+
+                    docker compose down
                     '''
                     }
             }
