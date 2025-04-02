@@ -14,7 +14,7 @@ stages {
                  docker rm -f jenkins
                  cd movie-service
                  docker build -t $DOCKER_ID/$MOVIE_DOCKER_IMAGE:$DOCKER_TAG .
-                 cd ../chart-service
+                 cd ../cast-service
                  docker build -t $DOCKER_ID/$CAST_DOCKER_IMAGE:$DOCKER_TAG .
                 sleep 6
                 '''
