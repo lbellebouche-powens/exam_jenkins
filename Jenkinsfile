@@ -65,87 +65,81 @@ stages {
 
         }
 
-stages {
-    stage {
-        parallel {
-            stage('Deploiement en dev'){
-                    environment
-                    {
-                    KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-                    }
-                        steps {
-                            script {
-                            sh '''
-                            rm -Rf .kube
-                            mkdir .kube
-                            ls
-                            cat $KUBECONFIG > .kube/config
-                            cp movie-chart/values.yaml values.yml
-                            cat values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                            helm upgrade --install movie-service movie-chart --values=values.yml --namespace dev
-                            cp cast-chart/values.yaml values.yml
-                            cat values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                            helm upgrade --install cast-service cast-chart --values=values.yml --namespace dev
-                            '''
-                            }
-                        }
 
-                    }
-            stage('Deploiement en staging'){
-                    environment
-                    {
-                    KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-                    }
-                        steps {
-                            script {
-                            sh '''
-                            rm -Rf .kube
-                            mkdir .kube
-                            ls
-                            cat $KUBECONFIG > .kube/config
-                            cp movie-chart/values.yaml values.yml
-                            cat values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                            helm upgrade --install movie-service movie-chart --values=values.yml --namespace staging
-                            cp cast-chart/values.yaml values.yml
-                            cat values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                            helm upgrade --install cast-service cast-chart --values=values.yml --namespace staging
-                            '''
-                            }
-                        }
-
-                    }
-            stage('Deploiement en qa'){
-                    environment
-                    {
-                    KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-                    }
-                        steps {
-                            script {
-                            sh '''
-                            rm -Rf .kube
-                            mkdir .kube
-                            ls
-                            cat $KUBECONFIG > .kube/config
-                            cp movie-chart/values.yaml values.yml
-                            cat values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                            helm upgrade --install movie-service movie-chart --values=values.yml --namespace qa
-                            cp cast-chart/values.yaml values.yml
-                            cat values.yml
-                            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                            helm upgrade --install cast-service cast-chart --values=values.yml --namespace qa
-                            '''
-                            }
-                        }
-                    }
+stage('Deploiement en dev'){
+        environment
+        {
+        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
         }
-    }
-}
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                cp movie-chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-chart --values=values.yml --namespace dev
+                cp cast-chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-chart --values=values.yml --namespace dev
+                '''
+                }
+            }
 
+        }
+stage('Deploiement en staging'){
+        environment
+        {
+        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
+        }
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                cp movie-chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-chart --values=values.yml --namespace staging
+                cp cast-chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-chart --values=values.yml --namespace staging
+                '''
+                }
+            }
+
+        }
+stage('Deploiement en qa'){
+        environment
+        {
+        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
+        }
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                cp movie-chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-chart --values=values.yml --namespace qa
+                cp cast-chart/values.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-chart --values=values.yml --namespace qa
+                '''
+                }
+            }
+        }
 
 stage('Deploiement en prod'){
         when {
