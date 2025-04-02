@@ -3,7 +3,8 @@ version: '3.7'
 services:
   movie_service:
     build: ./movie-service
-    command: 
+    command: ["/bin/sh", "-c"]
+    args:
       - uvicorn
       - app.main:app
       - --reload
