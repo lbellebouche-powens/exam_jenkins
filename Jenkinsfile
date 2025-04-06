@@ -204,6 +204,7 @@ stage('Deploy') {
                 }
             }
     }
+    }
 
 stage('Deploiement en prod'){
         when {
