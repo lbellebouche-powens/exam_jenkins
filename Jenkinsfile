@@ -98,17 +98,17 @@ stages {
 
         }
 
-        stage('Prepare Kube environment'){
-            environment
-            {
-                KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-                MOVIE_DB_PASSWORD = credentials("movie-db-password")
-                MOVIE_DB_ID = credentials("movie-db-id")
-                MOVIE_DB = "movie_db_dev"
-                CAST_DB_PASSWORD = credentials("cast-db-password")
-                CAST_DB_ID = credentials("cast-db-id")
-                CAST_DB = "cast_db_dev"
-            }
+stage('Prepare Kube environment'){
+        environment
+        {
+        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
+        MOVIE_DB_PASSWORD = credentials("movie-db-password")
+        MOVIE_DB_ID = credentials("movie-db-id")
+        MOVIE_DB = "movie_db_dev"
+        CAST_DB_PASSWORD = credentials("cast-db-password")
+        CAST_DB_ID = credentials("cast-db-id")
+        CAST_DB = "cast_db_dev"
+        }
             steps {
                 script {
                 sh '''
@@ -123,119 +123,122 @@ stages {
                 }
             }
         }
-    }
+}
 
-    stage('Deploiement en dev'){
+
+stage('Deploiement en dev'){
         environment
         {
-            NODE_PORT = "30000"
-            NAMESPACE = "dev"
+        NODE_PORT = "30000"
+        NAMESPACE = "dev"
         }
-        steps {
-            script {
-            sh '''
-            cd helm
-            helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-            helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-            cp api-service/values-movie.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-            cp api-service/values-cast.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-            helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
-            '''
+            steps {
+                script {
+                sh '''
+                cd helm
+                helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                cp api-service/values-movie.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                cp api-service/values-cast.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                '''
+                }
             }
         }
-    }
 
-    stage('Deploiement en staging'){
+stage('Deploiement en staging'){
         environment
         {
-            NODE_PORT = "30001"
-            NAMESPACE = "staging"
+        NODE_PORT = "30001"
+        NAMESPACE = "staging"
         }
-        steps {
-            script {
-            sh '''
-            helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-            helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-            cp api-service/values-movie.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-            cp api-service/values-cast.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-            helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
-            '''
+            steps {
+                script {
+                sh '''
+                helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                cp api-service/values-movie.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                cp api-service/values-cast.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                '''
+                }
             }
+
         }
-    }
-    stage('Deploiement en qa'){
+stage('Deploiement en qa'){
         environment
         {
-            NODE_PORT = "30002"
-            NAMESPACE = "qa"
+        NODE_PORT = "30002"
+        NAMESPACE = "qa"
         }
-        steps {
-            script {
-            sh '''
-            helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-            helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-            cp api-service/values-movie.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-            cp api-service/values-cast.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-            helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
-            '''
+            steps {
+                script {
+                sh '''
+                helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                cp api-service/values-movie.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                cp api-service/values-cast.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                '''
+                }
             }
         }
-    }
 
-    stage('Deploiement en prod'){
+stage('Deploiement en prod'){
         when {
                 branch 'master'
             }
         environment
         {
-            NODE_PORT = "30003"
-            NAMESPACE = "prod"
+        NODE_PORT = "30003"
+        NAMESPACE = "prod"
         }
-        steps {
-        // Create an Approval Button with a timeout of 15minutes.
-        // this require a manuel validation in order to deploy on production environment
-                timeout(time: 15, unit: "MINUTES") {
-                    input message: 'Do you want to deploy in production ?', ok: 'Yes'
-                }
+            steps {
+            // Create an Approval Button with a timeout of 15minutes.
+            // this require a manuel validation in order to deploy on production environment
+                    timeout(time: 15, unit: "MINUTES") {
+                        input message: 'Do you want to deploy in production ?', ok: 'Yes'
+                    }
 
-            script {
-            sh '''
-            helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-            helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-            cp api-service/values-movie.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-            cp api-service/values-cast.yaml values.yml
-            cat values.yml
-            sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-            helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-            helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
-            '''
+                script {
+                sh '''
+                helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                cp api-service/values-movie.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                cp api-service/values-cast.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                '''
+                }
             }
+
         }
 
     }
-
-    post { // send email when the job has failed
+        post { // send email when the job has failed
         // ..
         failure {
             echo "This will run if the job failed"
