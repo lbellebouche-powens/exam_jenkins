@@ -140,11 +140,11 @@ stage('Prepare Kube environment'){
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                    cp api-service/values-movie.yaml values.yml
+                    cp api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                    cp api-service/values-cast.yaml values.yml
+                    cp api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
@@ -171,11 +171,11 @@ stage('Prepare Kube environment'){
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                    cp api-service/values-movie.yaml values.yml
+                    cp api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                    cp api-service/values-cast.yaml values.yml
+                    cp api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
@@ -202,11 +202,11 @@ stage('Prepare Kube environment'){
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                    cp api-service/values-movie.yaml values.yml
+                    cp api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                    cp api-service/values-cast.yaml values.yml
+                    cp api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
@@ -242,11 +242,11 @@ stage('Deploiement en prod'){
                 cd helm
                 helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                 helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                cp api-service/values-movie.yaml values.yml
+                cp api-service/values.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                 helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                cp api-service/values-cast.yaml values.yml
+                cp api-service/values.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                 helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
