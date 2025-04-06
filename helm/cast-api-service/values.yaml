@@ -5,9 +5,6 @@ image:
   pullPolicy: Always
   tag: "v.22.0"
 
-imagePullSecrets:
-  - name: ""
-
 name: "cast-service"
 
 nameOverride: ""
