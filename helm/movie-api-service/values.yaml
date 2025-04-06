@@ -1,0 +1,56 @@
+replicaCount: 1
+
+image:
+  repository: laurencebel/movie-service
+  pullPolicy: Always
+  tag: "v.22.0"
+
+imagePullSecrets:
+  - name: ""
+
+name: "movie-service"
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 8000
+
+command:
+  - sh
+  - '-c'
+  - uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+env:
+  - name: DATABASE_URI
+    value: "postgresql://movie_db_username:movie_db_password@movie-db/movie_db_dev"
+  - name: CAST_SERVICE_HOST_URL
+    value: "http://cast-service:8000/api/v1/casts/"
+
+serviceAccount:
+  create: false
+  annotations: {}
+  name: ""
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+
+resources: {}
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+nodeSelector: {}
+tolerations: []
+affinity: {}
