@@ -241,7 +241,6 @@ stage('Deploiement en prod'){
 
         }
 
-    }
         post { // send email when the job has failed
         // ..
         failure {
