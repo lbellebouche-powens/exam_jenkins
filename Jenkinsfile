@@ -114,7 +114,6 @@ stage('Prepare Kube environment'){
                 sh '''
                 rm -Rf .kube
                 mkdir .kube
-                ls
                 cat $KUBECONFIG > .kube/config
                 kubectl create configmap nginx-conf --from-file=./nginx_config.conf
                 kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB
@@ -128,12 +127,16 @@ stage('Prepare Kube environment'){
     stage('Deploiement en dev'){
             environment
             {
+            KUBECONFIG = credentials("config")
             NODE_PORT = "30000"
             NAMESPACE = "dev"
             }
                 steps {
                     script {
                     sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
@@ -146,6 +149,7 @@ stage('Prepare Kube environment'){
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
                     helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    cd ..
                     '''
                     }
                 }
@@ -154,12 +158,17 @@ stage('Prepare Kube environment'){
     stage('Deploiement en staging'){
             environment
             {
+            KUBECONFIG = credentials("config")
             NODE_PORT = "30001"
             NAMESPACE = "staging"
             }
                 steps {
                     script {
                     sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
+                    cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
                     cp api-service/values-movie.yaml values.yml
@@ -171,6 +180,7 @@ stage('Prepare Kube environment'){
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
                     helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    cd ..
                     '''
                     }
                 }
@@ -179,12 +189,17 @@ stage('Prepare Kube environment'){
     stage('Deploiement en qa'){
             environment
             {
+            KUBECONFIG = credentials("config")
             NODE_PORT = "30002"
             NAMESPACE = "qa"
             }
                 steps {
                     script {
                     sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
+                    cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
                     cp api-service/values-movie.yaml values.yml
@@ -196,6 +211,7 @@ stage('Prepare Kube environment'){
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
                     helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    cd ..
                     '''
                     }
                 }
@@ -207,6 +223,7 @@ stage('Deploiement en prod'){
             }
         environment
         {
+        KUBECONFIG = credentials("config")
         NODE_PORT = "30003"
         NAMESPACE = "prod"
         }
@@ -219,6 +236,10 @@ stage('Deploiement en prod'){
 
                 script {
                 sh '''
+                rm -Rf .kube
+                mkdir .kube
+                cat $KUBECONFIG > .kube/config
+                cd helm
                 helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                 helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
                 cp api-service/values-movie.yaml values.yml
@@ -230,6 +251,7 @@ stage('Deploiement en prod'){
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                 helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
                 helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                cd ..
                 '''
                 }
             }
