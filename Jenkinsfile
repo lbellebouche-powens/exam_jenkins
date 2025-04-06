@@ -148,7 +148,7 @@ stage('Prepare Kube environment'){
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                    helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
                     cd ..
                     '''
                     }
@@ -179,7 +179,7 @@ stage('Prepare Kube environment'){
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                    helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
                     cd ..
                     '''
                     }
@@ -210,7 +210,7 @@ stage('Prepare Kube environment'){
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                     helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                    helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
                     cd ..
                     '''
                     }
@@ -250,7 +250,7 @@ stage('Deploiement en prod'){
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
                 helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
                 cd ..
                 '''
                 }
