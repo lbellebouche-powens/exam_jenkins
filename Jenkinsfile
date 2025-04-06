@@ -125,9 +125,6 @@ stage('Prepare Kube environment'){
         }
 
 
-stage('Deploy') {
-    parallel {
-
     stage('Deploiement en dev'){
             environment
             {
@@ -203,8 +200,6 @@ stage('Deploy') {
                     }
                 }
             }
-    }
-    }
 
 stage('Deploiement en prod'){
         when {
@@ -239,7 +234,10 @@ stage('Deploiement en prod'){
                 }
             }
 
-        post { // send email when the job has failed
+
+    }
+}
+    post { // send email when the job has failed
         // ..
         failure {
             echo "This will run if the job failed"
@@ -257,8 +255,5 @@ stage('Deploiement en prod'){
                 '''
             }
         }
-        }
-
     }
-}
 }
