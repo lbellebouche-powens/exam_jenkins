@@ -115,9 +115,18 @@ stage('Prepare Kube environment'){
                 rm -Rf .kube
                 mkdir .kube
                 cat $KUBECONFIG > .kube/config
-                kubectl create configmap nginx-conf --from-file=./nginx_config.conf
-                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB
-                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace dev
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace staging
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace qa
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace prod
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace dev
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace staging
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace qa
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace prod
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace dev
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace staging
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace qa
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace prod
                 '''
                 }
             }
@@ -271,9 +280,18 @@ stage('Deploiement en prod'){
         always {
             script {
                 sh '''
-                kubectl delete secret cast-db-creds
-                kubectl delete secret movie-db-creds
-                kubectl delete configmap nginx-conf
+                kubectl delete secret cast-db-creds --namespace dev
+                kubectl delete secret cast-db-creds --namespace staging
+                kubectl delete secret cast-db-creds --namespace qa
+                kubectl delete secret cast-db-creds --namespace prod
+                kubectl delete secret movie-db-creds --namespace dev
+                kubectl delete secret movie-db-creds --namespace staging
+                kubectl delete secret movie-db-creds --namespace qa
+                kubectl delete secret movie-db-creds --namespace prod
+                kubectl delete configmap nginx-conf --namespace dev
+                kubectl delete configmap nginx-conf --namespace staging
+                kubectl delete configmap nginx-conf --namespace qa
+                kubectl delete configmap nginx-conf --namespace prod
                 '''
             }
         }
