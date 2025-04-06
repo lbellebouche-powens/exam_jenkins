@@ -42,7 +42,7 @@ stages {
                     curl http://localhost:9090/api/v1/casts/docs
 
                     curl -X 'POST' \
-                        'http://34.240.190.249:30000/api/v1/casts/' \
+                        'http://localhost:9090/api/v1/casts/' \
                         -H 'accept: application/json' \
                         -H 'Content-Type: application/json' \
                         -d '{
@@ -55,7 +55,7 @@ stages {
                         -H 'accept: application/json'
 
                     curl -X 'POST' \
-                        'http://34.240.190.249:30000/api/v1/movies/' \
+                        'http://localhost:9090/api/v1/movies/' \
                         -H 'accept: application/json' \
                         -H 'Content-Type: application/json' \
                         -d '{
