@@ -257,6 +257,7 @@ stage('Deploiement en prod'){
                 kubectl delete secret movie-db-creds
                 kubectl delete configmap nginx-conf
                 '''
+            }
         }
     }
 }
