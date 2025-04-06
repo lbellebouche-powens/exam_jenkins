@@ -41,7 +41,39 @@ stages {
                     curl http://localhost:9090/api/v1/movies/docs
                     curl http://localhost:9090/api/v1/casts/docs
 
+                    curl -X 'POST' \
+                        'http://34.240.190.249:30000/api/v1/casts/' \
+                        -H 'accept: application/json' \
+                        -H 'Content-Type: application/json' \
+                        -d '{
+                        "name": "tutu",
+                        "nationality": "es"
+                        }'
+
+                    curl -X 'GET' \
+                        'http://localhost:9090/api/v1/casts/1/' \
+                        -H 'accept: application/json'
+
+                    curl -X 'POST' \
+                        'http://34.240.190.249:30000/api/v1/movies/' \
+                        -H 'accept: application/json' \
+                        -H 'Content-Type: application/json' \
+                        -d '{
+                        "name": "string",
+                        "plot": "string",
+                        "genres": [
+                            "string"
+                        ],
+                        "casts_id": [
+                            1
+                        ]
+                        }'
+                    curl -X 'GET' \
+                        'http://localhost:9090/api/v1/movies/' \
+                        -H 'accept: application/json'
+
                     docker compose down
+                    sleep 10
                     '''
                     }
             }
@@ -70,6 +102,14 @@ stage('Deploiement en dev'){
         environment
         {
         KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
+        MOVIE_DB_PASSWORD = credentials("movie-db-password")
+        MOVIE_DB_ID = credentials("movie-db-id")
+        MOVIE_DB = "movie_db_dev"
+        CAST_DB_PASSWORD = credentials("cast-db-password")
+        CAST_DB_ID = credentials("cast-db-id")
+        CAST_DB = "cast_db_dev"
+        NODE_PORT = "30000"
+        NAMESPACE = "dev"
         }
             steps {
                 script {
@@ -78,14 +118,72 @@ stage('Deploiement en dev'){
                 mkdir .kube
                 ls
                 cat $KUBECONFIG > .kube/config
-                cp movie-chart/values.yaml values.yml
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB
+                cd helm
+                helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                cp api-service/values-movie.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                helm upgrade --install movie-service movie-chart --values=values.yml --namespace dev
-                cp cast-chart/values.yaml values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                cp api-service/values-cast.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                helm upgrade --install cast-service cast-chart --values=values.yml --namespace dev
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                '''
+                }
+            }
+        }
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                ls
+                cat $KUBECONFIG > .kube/config
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB
+                cd helm
+                helm upgrade --install movie-db postgres-movie/ --namespace dev
+                helm upgrade --install cast-db postgres-cast/ --namespace dev
+                cp api-service/values-movie.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace dev
+                cp api-service/values-cast.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace dev
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=30000
+                '''
+                }
+            }
+        }
+            steps {
+                script {
+                sh '''
+                rm -Rf .kube
+                mkdir .kube
+                cat $KUBECONFIG > .kube/config
+                kubectl create configmap nginx-conf --from-file=./nginx_config.conf
+                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB
+                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB
+                cd helm
+                helm upgrade --install movie-db postgres-movie/ --namespace dev
+                helm upgrade --install cast-db postgres-cast/ --namespace dev
+                cp api-service/values-movie.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install movie-service movie-api-service --values=values.yml --namespace dev
+                cp api-service/values-cast.yaml values.yml
+                cat values.yml
+                sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                helm upgrade --install cast-service cast-api-service --values=values.yml --namespace dev
+                helm upgrade --install nginx nginx/ --namespace dev --set service.type=NodePort --set service.nodePort=30000
                 '''
                 }
             }
