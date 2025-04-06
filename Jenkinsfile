@@ -125,7 +125,6 @@ stage('Prepare Kube environment'){
         }
 }
 
-
 stage('Deploiement en dev'){
         environment
         {
@@ -247,15 +246,13 @@ stage('Deploiement en prod'){
                 body: "For more info on the pipeline failure, check out the console output at ${env.BUILD_URL}"
         }
         // ..
-
         always {
             script {
                 sh '''
                 kubectl delete secret cast-db-creds
                 kubectl delete secret movie-db-creds
                 kubectl delete configmap nginx-conf
-                    '''
-            }
+                '''
         }
     }
 }
