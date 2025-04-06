@@ -259,5 +259,5 @@ stage('Deploiement en prod'){
                 '''
         }
     }
-
+}
 }
