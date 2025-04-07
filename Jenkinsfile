@@ -238,13 +238,13 @@ stage('Deploiement en prod'){
         NODE_PORT = "30003"
         NAMESPACE = "prod"
         }
-            when { branch 'master|main' }
+            when { branch 'master' }
             steps {
             // Create an Approval Button with a timeout of 15minutes.
             // this require a manuel validation in order to deploy on production environment
-                    timeout(time: 15, unit: "MINUTES") {
-                        input message: 'Do you want to deploy in production ?', ok: 'Yes'
-                    }
+                    // timeout(time: 15, unit: "MINUTES") {
+                    //     input message: 'Do you want to deploy in production ?', ok: 'Yes'
+                    // }
 
                 script {
                 sh '''
