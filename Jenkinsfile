@@ -1,12 +1,12 @@
 pipeline {
-environment { // Declaration of environment variables
-DOCKER_ID = "laurencebel" // replace this with your docker-id
-MOVIE_DOCKER_IMAGE = "movie-service"
-CAST_DOCKER_IMAGE = "cast-service"
-DOCKER_TAG = "v.${BUILD_ID}.0" // we will tag our images with the current build in order to increment the value by 1 with each new build
-}
-agent any // Jenkins will be able to select all available agents
-stages {
+    environment { // Declaration of environment variables
+        DOCKER_ID = "laurencebel" // replace this with your docker-id
+        MOVIE_DOCKER_IMAGE = "movie-service"
+        CAST_DOCKER_IMAGE = "cast-service"
+        DOCKER_TAG = "v.${BUILD_ID}.0" // we will tag our images with the current build in order to increment the value by 1 with each new build
+    }
+    agent any // Jenkins will be able to select all available agents
+    stages {
         stage(' Docker Build'){ // docker build image stage
             steps {
                 script {
@@ -98,17 +98,17 @@ stages {
 
         }
 
-stage('Prepare Kube environment'){
-        environment
-        {
-        KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
-        MOVIE_DB_PASSWORD = credentials("movie-db-password")
-        MOVIE_DB_ID = credentials("movie-db-id")
-        MOVIE_DB = "movie_db_dev"
-        CAST_DB_PASSWORD = credentials("cast-db-password")
-        CAST_DB_ID = credentials("cast-db-id")
-        CAST_DB = "cast_db_dev"
-        }
+        stage('Prepare Kube environment'){
+            environment
+            {
+                KUBECONFIG = credentials("config") // we retrieve  kubeconfig from secret file called config saved on jenkins
+                MOVIE_DB_PASSWORD = credentials("movie-db-password")
+                MOVIE_DB_ID = credentials("movie-db-id")
+                MOVIE_DB = "movie_db_dev"
+                CAST_DB_PASSWORD = credentials("cast-db-password")
+                CAST_DB_ID = credentials("cast-db-id")
+                CAST_DB = "cast_db_dev"
+            }
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                     script {
@@ -133,119 +133,14 @@ stage('Prepare Kube environment'){
                 }
             }
         }
-
-
-    stage('Deploiement en dev'){
+        stage('Deploiement en dev'){
             environment
             {
-            KUBECONFIG = credentials("config")
-            NODE_PORT = "30000"
-            NAMESPACE = "dev"
+                KUBECONFIG = credentials("config")
+                NODE_PORT = "30000"
+                NAMESPACE = "dev"
             }
-                steps {
-                    script {
-                    sh '''
-                    rm -Rf .kube
-                    mkdir .kube
-                    cat $KUBECONFIG > .kube/config
-                    cd helm
-                    helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-                    helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                    sleep 10
-                    cp movie-api-service/values.yaml values.yml
-                    cat values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                    cp cast-api-service/values.yaml values.yml
-                    cat values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
-                    cd ..
-                    '''
-                    }
-                }
-            }
-
-    stage('Deploiement en staging'){
-            environment
-            {
-            KUBECONFIG = credentials("config")
-            NODE_PORT = "30001"
-            NAMESPACE = "staging"
-            }
-                steps {
-                    script {
-                    sh '''
-                    rm -Rf .kube
-                    mkdir .kube
-                    cat $KUBECONFIG > .kube/config
-                    cd helm
-                    helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-                    helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                    sleep 10
-                    cp movie-api-service/values.yaml values.yml
-                    cat values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                    cp cast-api-service/values.yaml values.yml
-                    cat values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
-                    cd ..
-                    '''
-                    }
-                }
-
-            }
-    stage('Deploiement en qa'){
-            environment
-            {
-            KUBECONFIG = credentials("config")
-            NODE_PORT = "30002"
-            NAMESPACE = "qa"
-            }
-                steps {
-                    script {
-                    sh '''
-                    rm -Rf .kube
-                    mkdir .kube
-                    cat $KUBECONFIG > .kube/config
-                    cd helm
-                    helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
-                    helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
-                    sleep 10
-                    cp movie-api-service/values.yaml values.yml
-                    cat values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
-                    cp cast-api-service/values.yaml values.yml
-                    cat values.yml
-                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
-                    helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
-                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
-                    cd ..
-                    '''
-                    }
-                }
-            }
-
-stage('Deploiement en prod'){
-        environment
-        {
-        KUBECONFIG = credentials("config")
-        NODE_PORT = "30003"
-        NAMESPACE = "prod"
-        }
-            when { branch 'master' }
             steps {
-            // Create an Approval Button with a timeout of 15minutes.
-            // this require a manuel validation in order to deploy on production environment
-                    // timeout(time: 15, unit: "MINUTES") {
-                    //     input message: 'Do you want to deploy in production ?', ok: 'Yes'
-                    // }
-
                 script {
                 sh '''
                 rm -Rf .kube
@@ -268,8 +163,108 @@ stage('Deploiement en prod'){
                 '''
                 }
             }
+        }
+
+        stage('Deploiement en staging'){
+            environment
+            {
+                KUBECONFIG = credentials("config")
+                NODE_PORT = "30001"
+                NAMESPACE = "staging"
+            }
+            steps {
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
+                    cd helm
+                    helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                    helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                    sleep 10
+                    cp movie-api-service/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                    cp cast-api-service/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    cd ..
+                    '''
+                }
+            }
+        }
+        stage('Deploiement en qa'){
+            environment
+            {
+                KUBECONFIG = credentials("config")
+                NODE_PORT = "30002"
+                NAMESPACE = "qa"
+            }
+            steps {
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
+                    cd helm
+                    helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                    helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                    sleep 10
+                    cp movie-api-service/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                    cp cast-api-service/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    cd ..
+                    '''
+                }
+            }
+        }
+
+        stage('Deploiement en prod'){
+            environment {
+                KUBECONFIG = credentials("config")
+                NODE_PORT = "30003"
+                NAMESPACE = "prod"
+            }
+            when { branch 'master' }
+            steps {
+            // Create an Approval Button with a timeout of 15minutes.
+            // this require a manuel validation in order to deploy on production environment
+                timeout(time: 15, unit: "MINUTES") {
+                    input message: 'Do you want to deploy in production ?', ok: 'Yes'
+                }
+                script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
+                    cd helm
+                    helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
+                    helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                    sleep 10
+                    cp movie-api-service/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install movie-service movie-api-service --values=values.yml --namespace $NAMESPACE
+                    cp cast-api-service/values.yaml values.yml
+                    cat values.yml
+                    sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
+                    helm upgrade --install cast-service cast-api-service --values=values.yml --namespace $NAMESPACE
+                    helm upgrade --install nginx nginx/ --namespace $NAMESPACE --set service.type=NodePort --set service.nodePort=$NODE_PORT
+                    cd ..
+                    '''
+                }
+            }
+        }
     }
-}
     post { // send email when the job has failed
         // ..
         failure {
