@@ -227,9 +227,7 @@ stage('Prepare Kube environment'){
             }
 
 stage('Deploiement en prod'){
-        when {
-                branch 'master'
-            }
+        when { branch 'master' }
         environment
         {
         KUBECONFIG = credentials("config")
@@ -264,8 +262,6 @@ stage('Deploiement en prod'){
                 '''
                 }
             }
-
-
     }
 }
     post { // send email when the job has failed
