@@ -110,24 +110,26 @@ stage('Prepare Kube environment'){
         CAST_DB = "cast_db_dev"
         }
             steps {
-                script {
-                sh '''
-                rm -Rf .kube
-                mkdir .kube
-                cat $KUBECONFIG > .kube/config
-                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace dev
-                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace staging
-                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace qa
-                kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace prod
-                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace dev
-                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace staging
-                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace qa
-                kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace prod
-                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace dev
-                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace staging
-                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace qa
-                kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace prod
-                '''
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    script {
+                    sh '''
+                    rm -Rf .kube
+                    mkdir .kube
+                    cat $KUBECONFIG > .kube/config
+                    kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace dev
+                    kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace staging
+                    kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace qa
+                    kubectl create configmap nginx-conf --from-file=./nginx_config.conf --namespace prod
+                    kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace dev
+                    kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace staging
+                    kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace qa
+                    kubectl create secret generic movie-db-creds  --from-literal=POSTGRES_PASSWORD=$MOVIE_DB_PASSWORD --from-literal=POSTGRES_USER=$MOVIE_DB_ID --from-literal=POSTGRES_DB=$MOVIE_DB --namespace prod
+                    kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace dev
+                    kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace staging
+                    kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace qa
+                    kubectl create secret generic cast-db-creds  --from-literal=POSTGRES_PASSWORD=$CAST_DB_PASSWORD --from-literal=POSTGRES_USER=$CAST_DB_ID --from-literal=POSTGRES_DB=$CAST_DB --namespace prod
+                    '''
+                    }
                 }
             }
         }
@@ -149,6 +151,7 @@ stage('Prepare Kube environment'){
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                    sleep 10
                     cp movie-api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
@@ -180,6 +183,7 @@ stage('Prepare Kube environment'){
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                    sleep 10
                     cp movie-api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
@@ -211,6 +215,7 @@ stage('Prepare Kube environment'){
                     cd helm
                     helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                     helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                    sleep 10
                     cp movie-api-service/values.yaml values.yml
                     cat values.yml
                     sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
@@ -249,6 +254,7 @@ stage('Deploiement en prod'){
                 cd helm
                 helm upgrade --install movie-db postgres-movie/ --namespace $NAMESPACE
                 helm upgrade --install cast-db postgres-cast/ --namespace $NAMESPACE
+                sleep 10
                 cp movie-api-service/values.yaml values.yml
                 cat values.yml
                 sed -i "s+tag.*+tag: ${DOCKER_TAG}+g" values.yml
@@ -273,23 +279,5 @@ stage('Deploiement en prod'){
                 body: "For more info on the pipeline failure, check out the console output at ${env.BUILD_URL}"
         }
         // ..
-        always {
-            script {
-                sh '''
-                kubectl delete secret cast-db-creds --namespace dev
-                kubectl delete secret cast-db-creds --namespace staging
-                kubectl delete secret cast-db-creds --namespace qa
-                kubectl delete secret cast-db-creds --namespace prod
-                kubectl delete secret movie-db-creds --namespace dev
-                kubectl delete secret movie-db-creds --namespace staging
-                kubectl delete secret movie-db-creds --namespace qa
-                kubectl delete secret movie-db-creds --namespace prod
-                kubectl delete configmap nginx-conf --namespace dev
-                kubectl delete configmap nginx-conf --namespace staging
-                kubectl delete configmap nginx-conf --namespace qa
-                kubectl delete configmap nginx-conf --namespace prod
-                '''
-            }
-        }
     }
 }
