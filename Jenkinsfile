@@ -11,7 +11,6 @@ pipeline {
             steps {
                 script {
                 sh '''
-                printenv
                 docker rm -f jenkins
                 cd movie-service
                 docker build -t $DOCKER_ID/$MOVIE_DOCKER_IMAGE:$DOCKER_TAG .
@@ -235,7 +234,7 @@ pipeline {
                 NODE_PORT = "30003"
                 NAMESPACE = "prod"
             }
-            when { branch 'master' }
+            when { branch 'origin/master' }
             steps {
             // Create an Approval Button with a timeout of 15minutes.
             // this require a manuel validation in order to deploy on production environment
