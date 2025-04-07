@@ -234,7 +234,7 @@ pipeline {
                 NODE_PORT = "30003"
                 NAMESPACE = "prod"
             }
-            when { branch '*/master' }
+            when { branch 'master' }
             steps {
             // Create an Approval Button with a timeout of 15minutes.
             // this require a manuel validation in order to deploy on production environment
